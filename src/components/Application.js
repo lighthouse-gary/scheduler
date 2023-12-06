@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import DayList from "components/DayList";
 import Appointment from "components/Appointment";
-import getAppointmentsForDay from "helpers/selectors";
+import { getAppointmentsForDay, getInterview, getInterviewersForDay } from "helpers/selectors";
 import "components/Application.scss";
+
 
 export default function Application() {
 
@@ -20,17 +21,40 @@ export default function Application() {
     // Make requests to /api/days and /api/appointments using Promise.all
     Promise.all([
       axios.get('/api/days'),
-      axios.get('/api/appointments')
+      axios.get('/api/appointments'),
+      axios.get('/api/interviewers'),
     ]).then((all) => {
-      const [days, appointments] = all;
-      setState(prev => ({ ...prev, days: days.data, appointments: appointments.data }));
-      console.log('days.data: ', days.data, 'appointment.data: ', appointments.data);
+      const [days, appointments, interviewers] = all;
+      setState(prev => ({
+        ...prev,
+        days: days.data,
+        appointments: appointments.data,
+        interviewers: interviewers.data,
+      }));
+      console.log('days.data: ', days.data, 'appointment.data: ', appointments.data, 'interviewers.data: ', interviewers.data);
     }).catch(error => {
       console.error('Error fetching data:', error);
     });
   }, []);
+  
 
-  const dailyAppointments = getAppointmentsForDay(state, state.day);
+  const appointments = getAppointmentsForDay(state, state.day);
+  const interviewers = getInterviewersForDay(state, state.day);
+
+  // Transform interview data before passing it to Appointment component
+  const schedule = appointments.map((appointment) => {
+    const interview = getInterview(state, appointment.interview);
+
+    return (
+      <Appointment
+        key={appointment.id}
+        id={appointment.id}
+        time={appointment.time}
+        interview={interview}
+        interviewers={interviewers}
+      />
+    );
+  });
 
   return (
     <main className="layout">
@@ -54,12 +78,7 @@ export default function Application() {
           alt="Lighthouse Labs"
         />      </section>
       <section className="schedule">
-        {Object.values(dailyAppointments).map(appointment => (
-          <Appointment
-            key={appointment.id}
-            {...appointment}
-          />
-        ))}
+        {schedule}
       </section>
     </main>
   );
