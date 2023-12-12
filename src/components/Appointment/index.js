@@ -1,3 +1,5 @@
+// index.js
+
 import React from 'react';
 import "components/Appointment/styles.scss";
 import Header from "components/Appointment/Header";
@@ -18,10 +20,21 @@ export default function Appointment(props) {
     props.interview ? SHOW : EMPTY
   );
 
-  const onSave = function (student, interviewer) {
-    console.log(student, interviewer);
+  const save = (name, interviewer) => {
+    const interview = {
+      student: name,
+      interviewer
+    };
 
+    props.bookInterview(props.id, interview)
+      .then(() => {
+        transition(SHOW);
+      })
+      .catch(error => {
+        // Handle errors, perhaps transition to an error mode
+      });
   };
+
 
   return (
     <article className="appointment">
@@ -39,7 +52,7 @@ export default function Appointment(props) {
         <Form
           interviewers={props.interviewers} // Set interviewers prop to an empty array for now
           onCancel={back} // Add onCancel prop to go back when canceled
-          onSave={onSave} // Add onSave prop to save the form when submitted
+          onSave={save} // Add onSave prop to save the form when submitted
         />
       )}
     </article>
