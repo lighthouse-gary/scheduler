@@ -39,8 +39,35 @@ export default function Application() {
       })
       .catch(error => {
         // Error handling code
+        console.error("Error canceling the appointment:", error);
       });
   }
+
+  function cancelInterview(id) {
+    return axios.delete(`/api/appointments/${id}`)
+      .then(response => {
+        // Update the local state after successful deletion
+        const appointment = {
+          ...state.appointments[id],
+          interview: null
+        };
+
+        const appointments = {
+          ...state.appointments,
+          [id]: appointment
+        };
+
+        setState(prev => ({
+          ...prev,
+          appointments
+        }));
+      })
+      .catch(error => {
+        // Handle any errors here
+        console.error("Error canceling the appointment:", error);
+      });
+  }
+
 
 
   useEffect(() => {
@@ -76,6 +103,7 @@ export default function Application() {
         interview={interview}
         interviewers={interviewers}
         bookInterview={bookInterview}
+        cancelInterview={cancelInterview}
       />
     );
   });
@@ -103,7 +131,7 @@ export default function Application() {
         />      </section>
       <section className="schedule">
         {schedule}
-        <Appointment time="5pm"/>
+        <Appointment time="5pm" />
       </section>
     </main>
   );

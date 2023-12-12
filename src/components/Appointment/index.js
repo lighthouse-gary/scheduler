@@ -7,6 +7,7 @@ import Empty from "components/Appointment/Empty";
 import Show from "components/Appointment/Show";
 import useVisualMode from 'hooks/useVisualMode';
 import Form from './Form';
+import Confirm from './Confirm';
 
 
 export default function Appointment(props) {
@@ -14,6 +15,7 @@ export default function Appointment(props) {
   const EMPTY = "EMPTY";
   const SHOW = "SHOW";
   const CREATE = "CREATE";
+  const CONFIRM = "CONFIRM";
 
   // Determine the initial mode based on the presence of an interview
   const { mode, transition, back } = useVisualMode(
@@ -32,6 +34,25 @@ export default function Appointment(props) {
       })
       .catch(error => {
         // Handle errors, perhaps transition to an error mode
+        console.log(error);
+      });
+  };
+
+  const deleteInterview = () => {
+    transition(CONFIRM);
+  };
+
+  const confirmDeletion = () => {
+    transition(EMPTY, true);
+
+    props.cancelInterview(props.id)
+      .then(() => {
+        transition(EMPTY);
+      })
+      .catch(error => {
+        // Error handling
+        transition(SHOW, true);
+        console.error("Error confirming deleting the appointment:", error);
       });
   };
 
@@ -42,10 +63,11 @@ export default function Appointment(props) {
 
       {/* Conditional rendering based on the mode */}
       {mode === EMPTY && <Empty onAdd={() => transition(CREATE)} />}
-      {mode === SHOW && (
+      {mode === SHOW && props.interview && (
         <Show
           student={props.interview.student}
           interviewer={props.interview.interviewer}
+          deleteInterview={deleteInterview}
         />
       )}
       {mode === CREATE && (
@@ -53,6 +75,13 @@ export default function Appointment(props) {
           interviewers={props.interviewers} // Set interviewers prop to an empty array for now
           onCancel={back} // Add onCancel prop to go back when canceled
           onSave={save} // Add onSave prop to save the form when submitted
+        />
+      )}
+      {mode === CONFIRM && (
+        <Confirm
+          message="Are you sure you want to delete the appointment?"
+          onConfirm={confirmDeletion}
+          onCancel={back}
         />
       )}
     </article>
