@@ -6,17 +6,22 @@ import Show from "components/Appointment/Show";
 import useVisualMode from 'hooks/useVisualMode';
 import Form from './Form';
 
-// Define mode constants
-const EMPTY = "EMPTY";
-const SHOW = "SHOW";
-const CREATE = "CREATE";
-
 
 export default function Appointment(props) {
+  // Define mode constants
+  const EMPTY = "EMPTY";
+  const SHOW = "SHOW";
+  const CREATE = "CREATE";
+
   // Determine the initial mode based on the presence of an interview
   const { mode, transition, back } = useVisualMode(
     props.interview ? SHOW : EMPTY
   );
+
+  const onSave = function (student, interviewer) {
+    console.log(student, interviewer);
+
+  };
 
   return (
     <article className="appointment">
@@ -33,7 +38,8 @@ export default function Appointment(props) {
       {mode === CREATE && (
         <Form
           interviewers={props.interviewers} // Set interviewers prop to an empty array for now
-          onCancel={() => back()} // Add onCancel prop to go back when canceled
+          onCancel={back} // Add onCancel prop to go back when canceled
+          onSave={onSave} // Add onSave prop to save the form when submitted
         />
       )}
     </article>
