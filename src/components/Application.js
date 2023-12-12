@@ -24,19 +24,16 @@ export default function Application() {
       axios.get('/api/appointments'),
       axios.get('/api/interviewers'),
     ]).then((all) => {
-      const [days, appointments, interviewers] = all;
-      setState(prev => ({
-        ...prev,
-        days: days.data,
-        appointments: appointments.data,
-        interviewers: interviewers.data,
-      }));
-      console.log('days.data: ', days.data, 'appointment.data: ', appointments.data, 'interviewers.data: ', interviewers.data);
+      const days = all[0].data;
+      const appointments = all[1].data;
+      const interviewers = all[2].data;
+      setState(prev => ({ ...prev, days, appointments, interviewers }));
+      // console.log('days.data: ', days, 'appointment.data: ', appointments.data, 'interviewers.data: ', interviewers.data);
     }).catch(error => {
       console.error('Error fetching data:', error);
     });
   }, []);
-  
+
 
   const appointments = getAppointmentsForDay(state, state.day);
   const interviewers = getInterviewersForDay(state, state.day);

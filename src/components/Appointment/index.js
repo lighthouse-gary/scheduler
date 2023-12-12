@@ -32,7 +32,7 @@ export default function Appointment(props) {
       )}
       {mode === CREATE && (
         <Form
-          interviewers={[]} // Set interviewers prop to an empty array for now
+          interviewers={props.interviewers} // Set interviewers prop to an empty array for now
           onCancel={() => back()} // Add onCancel prop to go back when canceled
         />
       )}
