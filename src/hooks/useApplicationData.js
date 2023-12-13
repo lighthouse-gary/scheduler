@@ -11,6 +11,24 @@ export default function useApplicationData() {
     interviewers: {}
   });
 
+  // Function to update number of spots
+  function updateSpots(dayName, days, appointments) {
+    const day = days.find(d => d.name === dayName);
+    let spots = 0;
+
+    for (const id of day.appointments) {
+      const appointment = appointments[id];
+      if (!appointment.interview) {
+        spots++;
+      }
+    }
+
+    const updatedDay = { ...day, spots };
+    const updatedDays = days.map(d => d.name === dayName ? updatedDay : d);
+
+    return updatedDays;
+  }
+
   // Function to set the current day
   const setDay = day => setState({ ...state, day });
 
@@ -41,26 +59,34 @@ export default function useApplicationData() {
 
     return axios.put(`/api/appointments/${id}`, { interview })
       .then(() => {
+        const updatedAppointments = {
+          ...state.appointments,
+          [id]: appointment
+        };
+        const updatedDays = updateSpots(state.day, state.days, updatedAppointments);
+
         setState(prev => ({
           ...prev,
-          appointments: {
-            ...prev.appointments,
-            [id]: appointment
-          }
+          appointments: updatedAppointments,
+          days: updatedDays
         }));
       });
-  };  
+  };
 
   // Function to cancel an interview
   const cancelInterview = (id) => {
     return axios.delete(`/api/appointments/${id}`)
       .then(() => {
+        const updatedAppointments = {
+          ...state.appointments,
+          [id]: { ...state.appointments[id], interview: null }
+        };
+        const updatedDays = updateSpots(state.day, state.days, updatedAppointments);
+
         setState(prev => ({
           ...prev,
-          appointments: {
-            ...prev.appointments,
-            [id]: { ...prev.appointments[id], interview: null }
-          }
+          appointments: updatedAppointments,
+          days: updatedDays
         }));
       });
   };
