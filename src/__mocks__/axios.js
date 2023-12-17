@@ -88,5 +88,13 @@ export default {
       status: 204,
       statusText: "No Content"
     });
-  })
+  }),
+
+  delete: jest.fn(url => {
+    // You can add conditional logic here if needed, based on the URL or other parameters
+    return Promise.resolve({
+      status: 204,
+      statusText: "No Content"
+    });
+  }),
 };
