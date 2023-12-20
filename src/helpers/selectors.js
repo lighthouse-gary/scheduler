@@ -23,9 +23,17 @@ export function getInterview(state, interview) {
 }
 
 export function getInterviewersForDay(state, day) {
-  const found = state.days.find(d => day === d.name);
+  const dayObj = state.days.find(d => d.name === day);
+  if (!dayObj) return [];
 
-  if (state.days.length === 0 || found === undefined) return [];
+  // Directly use the interviewer IDs from the day object
+  const interviewerIds = dayObj.interviewers;
 
-  return found.interviewers.map(id => state.interviewers[id]);
+  // Map these IDs to interviewer objects, filtering out any undefined values
+  const interviewersForDay = interviewerIds
+    .map(interviewerId => state.interviewers[interviewerId])
+    .filter(interviewer => interviewer);
+
+  return interviewersForDay;
 }
+

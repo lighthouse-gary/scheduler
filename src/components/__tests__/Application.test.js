@@ -2,14 +2,14 @@
 
 import React from "react";
 import axios from "axios";
-import { render, cleanup, waitForElement, getByText, getAllByTestId, fireEvent, getByAltText, getByPlaceholderText, queryByText, queryByAltText, waitForElementToBeRemoved, prettyDOM } from "@testing-library/react";
+import { findByText, render, cleanup, waitForElement, getByText, getAllByTestId, fireEvent, getByAltText, getByPlaceholderText, queryByText, queryByAltText, waitForElementToBeRemoved, prettyDOM } from "@testing-library/react";
 import Application from "components/Application";
 
 afterEach(cleanup);
 
 describe("Application", () => {
 
-  xit("defaults to Monday and changes the schedule when a new day is selected", () => {
+  it("defaults to Monday and changes the schedule when a new day is selected", () => {
     const { getByText } = render(<Application />);
 
     return waitForElement(() => getByText("Monday")).then(() => {
@@ -18,43 +18,32 @@ describe("Application", () => {
     });
   });
 
-  xit("loads data, books an interview and reduces the spots remaining for the first day by 1", async () => {
+  it("loads data, books an interview and reduces the spots remaining for the first day by 1", async () => {
     const { container } = render(<Application />);
-
-    // Wait for the "Archie Cohen" text to appear in the document
-    await waitForElement(() => getByText(container, "Archie Cohen"));
-
-    // Use getAllByTestId to find all appointment elements
-    const appointments = getAllByTestId(container, "appointment");
-    const appointment = appointments[0];
-
-    fireEvent.click(getByAltText(appointment, "Add"));
-
-    fireEvent.change(getByPlaceholderText(appointment, /enter student name/i), {
-      target: { value: "Lydia Miller-Jones" }
-    });
-
-    fireEvent.click(getByAltText(appointment, "Sylvia Palmer"));
-
-    fireEvent.click(getByText(appointment, "Save"));
-
-    // Wait for "Saving" to be removed
-    await waitForElementToBeRemoved(() => getByText(appointment, "Saving"));
-
-    // Assert that student's name is displayed;
-    expect(getByText(appointment, "Lydia Miller-Jones")).toBeInTheDocument();
-
-    // Find all day list item nodes
-    const dayNodes = getAllByTestId(container, "day");
-
-    // Find the "Monday" node
-    const mondayNode = dayNodes.find(node => queryByText(node, "Monday"));
-
-    // Check that "Monday" has the text "no spots remaining"
+  
+    // Ensure the initial data has loaded
+    await findByText(container, "Archie Cohen");
+  
+    // Book a new appointment
+    const firstAppointment = getAllByTestId(container, "appointment")[0];
+    fireEvent.click(getByAltText(firstAppointment, "Add"));
+    fireEvent.change(getByPlaceholderText(firstAppointment, /enter student name/i), { target: { value: "Siebs12" } });
+    fireEvent.click(getByAltText(firstAppointment, "Sylvia Palmer"));
+    fireEvent.click(getByText(firstAppointment, "Save"));
+  
+    // Wait for the saving process to complete
+    await waitForElementToBeRemoved(() => getByText(firstAppointment, "Saving"));
+  
+    // Check that the new student name is displayed
+    expect(getByText(firstAppointment, "Siebs12")).toBeInTheDocument();
+  
+    // Verify the spots remaining are updated correctly
+    const mondayNode = getAllByTestId(container, "day").find(node => queryByText(node, "Monday"));
     expect(getByText(mondayNode, "no spots remaining")).toBeInTheDocument();
   });
+  
 
-  xit("loads data, cancels an interview and increases the spots remaining for Monday by 1", async () => {
+  it("loads data, cancels an interview and increases the spots remaining for Monday by 1", async () => {
     // 1. Render the Application.
     const { container } = render(<Application />);
 
@@ -90,10 +79,10 @@ describe("Application", () => {
     expect(getByText(day, "2 spots remaining")).toBeInTheDocument();
   });
 
-  xit("loads data, edits an interview and keeps the spots remaining for Monday the same", async () => {
+  it("loads data, edits an interview and keeps the spots remaining for Monday the same", async () => {
 
     // Render the Application
-    const { container, debug } = render(<Application />);
+    const { container } = render(<Application />);
 
     // Wait for Data to Load
     await waitForElement(() => getByText(container, "Archie Cohen"));
@@ -125,10 +114,10 @@ describe("Application", () => {
     expect(getByText(mondayNode, "1 spot remaining")).toBeInTheDocument();
   });
 
-  xit("shows the save error when failing to save an appointment", async () => {
+  it("shows the save error when failing to save an appointment", async () => {
 
     // 1. Render the Application and Load Data
-    const { container, debug } = render(<Application />);
+    const { container } = render(<Application />);
     await waitForElement(() => getByText(container, "Archie Cohen"));
 
     // 2. Initiate Adding or Editing an Appointment
@@ -162,7 +151,7 @@ describe("Application", () => {
   it("shows the delete error when failing to delete an appointment", async () => {
 
     // 1. Render the Application and Load Data
-    const { container, debug } = render(<Application />);
+    const { container } = render(<Application />);
     await waitForElement(() => getByText(container, "Archie Cohen"));
 
     // 2. Find an Existing Appointment to Delete
@@ -185,6 +174,5 @@ describe("Application", () => {
     // 7. Close the Error Message (Optional)
     // If you want to test closing the error message
     fireEvent.click(queryByAltText(appointmentToDelete, "Close"));
-    debug();
   });
 });
